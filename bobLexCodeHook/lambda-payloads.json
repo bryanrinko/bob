@@ -1,0 +1,21 @@
+{
+    "TeamAssistantCodeHook": {
+        "lambda": {
+            "currentIntent": {
+                "slots": {},
+                "name": "GreetingForTeamAssistant",
+                "confirmationStatus": "None"
+            },
+            "bot": {
+                "alias": "$LATEST",
+                "version": "$LATEST",
+                "name": "cloud9-teamAssistantLexCodeH-TeamAssistantCodeHook-LNKI5TQ9DM1O"
+            },
+            "userId": "16032052206",
+            "invocationSource": "DialogCodeHook",
+            "outputDialogMode": "Text",
+            "messageVersion": "1.0",
+            "sessionAttributes": {}
+        }
+    }
+}
