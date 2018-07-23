@@ -1,0 +1,29 @@
+<html>
+    <body>
+        <script>
+            window.onload = function(){
+                var copyTextareaBtn = document.querySelector('.js-textareacopybtn');
+                document.querySelector('.js-copytextarea').value=window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("code").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1");
+
+                copyTextareaBtn.addEventListener('click', function(event) {
+                    var copyTextarea = document.querySelector('.js-copytextarea');
+                    copyTextarea.focus();
+                    copyTextarea.select();
+
+                    try {
+                        var successful = document.execCommand('copy');
+                        var msg = successful ? 'successful' : 'unsuccessful';
+                        console.log('Copying text command was ' + msg);
+                    } catch (err) {
+                        console.log('Oops, unable to copy');
+                    }
+                });
+            };
+        </script>
+        Thanks!  Here is your temp code: 
+        <p>
+            <button class="js-textareacopybtn" style="vertical-align:top;">Copy Temp Code to Clipboard</button>
+            <input readonly class="js-copytextarea" type="text" size="100">
+        </p>
+    </body>
+</html>

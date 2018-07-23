@@ -1,0 +1,40 @@
+<html>
+    <body>
+        <script>
+            function commitToken(secret,token) {
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("POST", "https://v1h2fs5vr6.execute-api.us-east-1.amazonaws.com/dev/auth/"+secret+"/"+token, true);
+                xhttp.setRequestHeader("Content-type", "application/json");
+                xhttp.send();
+                var response = JSON.parse(xhttp.responseText);
+            }
+            window.onload = function(){
+                var copyTextareaBtn = document.querySelector('.js-textareacopybtn');
+                tokenVal = window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("code").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1");
+                //document.querySelector('.js-copytextarea').value = tokenVal;
+                
+
+                copyTextareaBtn.addEventListener('click', function(event) {
+                    var copyTextarea = document.querySelector('.js-copytextarea');
+                    //copyTextarea.focus();
+                    //copyTextarea.select();
+                    var secret = copyTextarea.value;
+                    commitToken(secret,tokenVal);
+
+                    //try {
+                    //    var successful = document.execCommand('copy');
+                    //    var msg = successful ? 'successful' : 'unsuccessful';
+                    //    console.log('Copying text command was ' + msg);
+                    //} catch (err) {
+                    //    console.log('Oops, unable to copy');
+                    //}
+                });
+            };
+        </script>
+        Thanks!  Please enter the code: 
+        <p>
+            <button class="js-textareacopybtn" style="vertical-align:top;">Copy Temp Code to Clipboard</button>
+            <input  class="js-copytextarea" type="text" size="100">
+        </p>
+    </body>
+</html>

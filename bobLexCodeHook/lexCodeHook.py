@@ -47,6 +47,7 @@ def dispatch(intent_request):
 """ --- Functions that control the bot's behavior --- """
 def teamAssistantGreeting(intent_request):
     message=""
+    userPhoneNum = intent_request['userId']
     try:
         fname=getCurrentUser(intent_request,"fname")
         expiration=getCurrentUser(intent_request,"expiration")

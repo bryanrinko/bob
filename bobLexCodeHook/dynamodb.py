@@ -8,6 +8,7 @@ from datetime import date
 dynamodb = boto3.resource('dynamodb')
 
 PENDING = 'Pending'
+USERS_TABLE = 'usersTable'
 
 # Helper class to convert a DynamoDB item to JSON.
 class DecimalEncoder(json.JSONEncoder):
@@ -21,8 +22,8 @@ class DecimalEncoder(json.JSONEncoder):
 
 def getCurrentUser(intent_request,field):
     value=""
-    userPhoneNum =  intent_request['userId']
-    table = dynamodb.Table('auth')
+    userPhoneNum = intent_request['userId']
+    table = dynamodb.Table(USERS_TABLE)
     try:
         response = table.get_item(
             Key={
@@ -35,16 +36,19 @@ def getCurrentUser(intent_request,field):
     else:
         try:
             item = response['Item']
-            value = item[field]
+            if not item:
+                value = item[field]
+            else:
+                raise Exception("Exception: Empty record or field for {} from {}.".format(field,userPhoneNum))
         except Exception as e:
             print(e.message)
-            raise Exception("Exception: Can't retrieve {} from {}.".format(field,userPhoneNum))
+            #raise Exception("Exception: Can't retrieve {} from {}.".format(field,userPhoneNum))
             
     return value
 
 def updateUser(phone,fname,token):
     value=""
-    table = dynamodb.Table('auth')
+    table = dynamodb.Table(USERS_TABLE)
     try:
         response = table.update_item(
             Key={
@@ -60,9 +64,25 @@ def updateUser(phone,fname,token):
     except botocore.exceptions.ClientError as e:
         print(e.response['Error']['Message'])
 
+def getPendingAuth(code,token):
+    value=""
+    table = dynamodb.Table(USERS_TABLE)
+    try:
+        response = table.update_item(
+            Key={
+                'access_token': code
+            },
+            UpdateExpression="set access_token=:t",
+            ExpressionAttributeValues={
+                ':t': token
+            },
+            ReturnValues="UPDATED_EXISTING"
+    except botocore.exceptions.ClientError as e:
+        print(e.response['Error']['Message'])
+
 def addUser(phone_num):
     value=""
-    table = dynamodb.Table('auth')
+    table = dynamodb.Table(USERS_TABLE)
     try:
         response = table.put_item(
             Item={

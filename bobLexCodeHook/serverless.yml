@@ -34,7 +34,11 @@ provider:
         - "dynamodb:Scan"
         - "dynamodb:Query"
         - "dynamodb:UpdateItem"
-      Resource: "arn:aws:dynamodb:*:*:table/auth"
+        - "dynamodb:GetRecords"
+        - "dynamodb:GetShardIterator"
+        - "dynamodb:DescribeStream"
+        - "dynamodb:ListStreams"
+      Resource: "arn:aws:dynamodb:*:*:table/usersTable"
     - Effect: "Allow"
       Action:
         - "dynamodb:Scan"
@@ -67,6 +71,36 @@ provider:
 functions:
   requestHandler:
     handler: lexCodeHook.requestHandler
+
+
+  samlSaveHandler: 
+    handler: samlConfirmation.samlSaveHandler
+    events: 
+      - http: 
+          path: auth/{code}/{token}
+          method: POST
+          request:
+            parameters:
+              paths:
+                code: true
+                token: true
+                
+  newUserHandler:
+    handler: newUserWelcome.newUserHandler
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - usersTable
+              - StreamArn
+          batchSize: 1
+    environment:
+      TWILIO_ACCOUNT_SID: ${ssm:TWILIO_ACCOUNT_SID}
+      TWILIO_API_KEY: ${ssm:TWILIO_API_KEY}
+      TWILIO_API_SECRET: ${ssm:TWILIO_API_SECRET}
+      TWILIO_PHONE_NUMBER: ${ssm:TWILIO_PHONE_NUMBER}
+      
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -102,6 +136,24 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
+resources:  # CloudFormation template syntax
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: usersTable
+        AttributeDefinitions:
+          - AttributeName: phone
+            AttributeType: S
+        KeySchema:
+          - AttributeName: phone
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+
 #resources:
 #  Resources:
 #    NewResource:
