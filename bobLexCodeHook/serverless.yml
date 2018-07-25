@@ -19,7 +19,7 @@ service: bob
 
 provider:
   name: aws
-  runtime: python2.7
+  runtime: python3.6
 
 # you can overwrite defaults here
 #  stage: dev
@@ -34,11 +34,12 @@ provider:
         - "dynamodb:Scan"
         - "dynamodb:Query"
         - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
         - "dynamodb:GetRecords"
         - "dynamodb:GetShardIterator"
         - "dynamodb:DescribeStream"
         - "dynamodb:ListStreams"
-      Resource: "arn:aws:dynamodb:*:*:table/usersTable"
+      Resource: "arn:aws:dynamodb:*:*:table/*"
     - Effect: "Allow"
       Action:
         - "dynamodb:Scan"
@@ -84,15 +85,15 @@ functions:
               paths:
                 code: true
                 token: true
-                
-  newUserHandler:
-    handler: newUserWelcome.newUserHandler
+
+  confirmedUserHandler:
+    handler: confirmedUser.confirmedUserHandler
     events:
       - stream:
           type: dynamodb
           arn:
             Fn::GetAtt:
-              - usersTable
+              - authRequestTable
               - StreamArn
           batchSize: 1
     environment:
@@ -100,7 +101,6 @@ functions:
       TWILIO_API_KEY: ${ssm:TWILIO_API_KEY}
       TWILIO_API_SECRET: ${ssm:TWILIO_API_SECRET}
       TWILIO_PHONE_NUMBER: ${ssm:TWILIO_PHONE_NUMBER}
-      
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -151,8 +151,34 @@ resources:  # CloudFormation template syntax
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+    authRequestTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: authRequest
+        AttributeDefinitions:
+          - AttributeName: code
+            AttributeType: N
+        KeySchema:
+          - AttributeName: code
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
         StreamSpecification:
           StreamViewType: NEW_AND_OLD_IMAGES
+    eventTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: event
+        AttributeDefinitions:
+          - AttributeName: transId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: transId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 
 #resources:
 #  Resources:

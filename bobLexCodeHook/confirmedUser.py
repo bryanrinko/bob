@@ -10,19 +10,17 @@ TWILIO_API_SECRET = os.environ.get("TWILIO_API_SECRET")
 TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER")
 TWILIO_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json"
 
-def newUserHandler(event, context):
+def confirmedUserHandler(event, context):
     for record in event.get('Records'):
-        print (record)
-        if (record.get('eventName') == 'MODIFY'):
-            oldAccessToken = record.get('dynamodb').get('OldImage').get('access_token').get('S')
-            newAccessToken = record.get('dynamodb').get('NewImage').get('access_token').get('S')
-            if (oldAccessToken == 'Pending' and newAccessToken != 'Pending'):
-                to_number = record.get('dynamodb').get('NewImage').get('phone').get('S')
+        if (record.get('eventName') == 'REMOVE'):
+            print (record)
+            code = record.get('dynamodb').get('OldImage').get('code').get('S')
+            to_number = record.get('dynamodb').get('OldImage').get('phone').get('S')
     
-                # Create message
-                body = "Hey, thx for the access....what can I do for you?"
+            # Create message
+            body = "Hi, thx for the access....what can I do for you?"
 
-#                send_sms(to_number, body)
+            send_sms(to_number, body)
     
 def send_sms(to_number, body):
     # insert Twilio Account SID into the REST API URL
@@ -45,7 +43,3 @@ def send_sms(to_number, body):
     except Exception as e:
         # something went wrong!
         return e
-
-
-#    client = Client(TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_ACCOUNT_SID)
-#    client.api.messages.create(to_number,from_=TWILIO_PHONE_NUMBER,body=body)

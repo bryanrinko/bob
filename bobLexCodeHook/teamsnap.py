@@ -11,32 +11,9 @@ logger.setLevel(logging.DEBUG)
 TEAMSNAP_BASE_URL = 'https://api.teamsnap.com/v3/'
 TEAMSNAP_ME_URL = 'https://api.teamsnap.com/v3/me'
 
-def updateUserInfoFromTeamsnap(access_token):
+def updateDBUserInfoFromTeamsnap(token,phone):
     message=''
     try:
-        result = requests.get(TEAMSNAP_ME_URL, headers={'content-type': 'application/json', 'Authorization': 'Bearer {}'.format(token)})
-        result.raise_for_status()
-        logging.info('teamsnap-url - OK')
-        jsonObj = json.loads(result.text)
-        fname=jsonObj['collection']['items'][0]['data'][8]['value']
-        #updateUser(phone,fname,token)
-        message='{} updated!'.format(fname)
-    except requests.exceptions.RequestException as e:
-        logger.error("ERROR: Request Error: %s" % e)
-        message='Boo...update failed!'
-        
-    return close(intent_request['sessionAttributes'],
-                 'Fulfilled',
-                 {'contentType': 'PlainText',
-                  'content': message})
-
-
-def updateUserInfoFromTeamsnap(intent_request):
-    message=''
-    try:
-        token = getCurrentUser(intent_request,"access_token")
-        phone = getCurrentUser(intent_request,"phone")
-        
         result = requests.get(TEAMSNAP_ME_URL, headers={'content-type': 'application/json', 'Authorization': 'Bearer {}'.format(token)})
         result.raise_for_status()
         logging.info('teamsnap-url - OK')
@@ -47,11 +24,16 @@ def updateUserInfoFromTeamsnap(intent_request):
     except requests.exceptions.RequestException as e:
         logger.error("ERROR: Request Error: %s" % e)
         message='Boo...update failed!'
-        
+    return message
+
+def updateUserInfoFromTeamsnap(intent_request):
+    token = getCurrentUser(intent_request,"access_token")
+    phone = getCurrentUser(intent_request,"phone")
+    message = updateDBUserInfoFromTeamsnap(token,phone)
     return close(intent_request['sessionAttributes'],
-                 'Fulfilled',
-                 {'contentType': 'PlainText',
-                  'content': message})
+            'Fulfilled',
+            {'contentType': 'PlainText',
+             'content': message})
 
 def teamAssistantConnectivityCheck(intent_request):
     message=''
@@ -61,7 +43,7 @@ def teamAssistantConnectivityCheck(intent_request):
         result = requests.get(TEAMSNAP_ME_URL, headers={'content-type': 'application/json', 'Authorization': 'Bearer {}'.format(token)})
         result.raise_for_status()
         logging.info('teamsnap-url - OK')
-        print (result.text)
+        #print (result.text)
         #collection = Collection.from_json(result.text)
         jsonObj = json.loads(result.text)
         message = 'Good to go'

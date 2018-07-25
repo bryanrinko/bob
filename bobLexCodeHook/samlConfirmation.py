@@ -9,11 +9,16 @@ def samlSaveHandler(event, context):
     The JSON body of the request is provided in the event slot.
     """
     code = event["pathParameters"]["code"]
+    print(code)
     token = event["pathParameters"]["token"]
-
-    getPendingAuth(code,token)
+    print(token)
+    phone = getPhoneFromAuthRequests(code)
+    print (phone)
+    addUser(phone)
+    updateDBUserInfoFromTeamsnap(token,phone)
+    deletePendingAuth(code)
     
     return {
         'statusCode': 200,
-        'body': json.dumps("{'code': code,'token': token}")
+        'body': {'message':'Got it'}
     }

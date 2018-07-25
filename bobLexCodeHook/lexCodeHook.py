@@ -46,9 +46,12 @@ def dispatch(intent_request):
 
 """ --- Functions that control the bot's behavior --- """
 def teamAssistantGreeting(intent_request):
+    print ("begin teamAssistantGreeting")
     message=""
     userPhoneNum = intent_request['userId']
     try:
+        addEvent(intent_request)
+        
         fname=getCurrentUser(intent_request,"fname")
         expiration=getCurrentUser(intent_request,"expiration")
     
@@ -57,10 +60,13 @@ def teamAssistantGreeting(intent_request):
         elif len(fname)>0:
             message = 'Hi {}, what can I do for you?'.format(fname)
         else:
-            addUser(userPhoneNum)
-            message = 'Hi, please click this link to authorize me to your Teamsnap account: https://d3bbtrhm68u3kt.cloudfront.net/index.html'
+            code=addAuthRequest(userPhoneNum)
+            message = 'Click here to register: https://d3bbtrhm68u3kt.cloudfront.net/index.html . Enter this code when prompted: {}'.format(code)
     except Exception as e:
-        print(e.message)
+        if hasattr(e, 'message'):
+            print(e.message)
+        else:
+            print(e)
         message = "I'm sorry...must be catching a cold, I feel a little off.  Please try again in a few minutes."
         
     return close(intent_request['sessionAttributes'],
